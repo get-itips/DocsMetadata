@@ -1,4 +1,4 @@
-$initialPath = "D:\Prof\dev\docs\office-docs-powershell\exchange\exchange-ps\exchange\devices"
+$initialPath = "D:\Prof\dev\docs\office-docs-powershell\exchange\exchange-ps\exchange\mailboxes"
 $files=get-ChildItem $initialPath #-filter "u*.md"
 foreach ($file in $files){
     
