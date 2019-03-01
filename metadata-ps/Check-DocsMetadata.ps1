@@ -21,7 +21,7 @@
         )
 
         Write-Host "###########################" -ForegroundColor Blue
-        Write-Host "Check-DocsMetadata.ps1 Version 0.1" -ForegroundColor White
+        Write-Host "Check-DocsMetadata.ps1 Version 0.2" -ForegroundColor White
         Write-Host "Runtime values set by user:" -ForegroundColor White
         Write-Host "###########################" -ForegroundColor Blue
         Write-Host "Value for path " $Path -ForegroundColor Blue
