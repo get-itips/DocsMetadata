@@ -20,15 +20,15 @@
             [switch]$Write = $false
         )
 
-        Write-Host "###########################"
-        Write-Host "Check-DocsMetadata.ps1 Version 0.1"
-        Write-Host "Runtime values set by user:"
-        Write-Host "###########################"
-        Write-Host "Value for path " $Path
-        Write-Host "Value for author " $Author
-        Write-Host "Value for ms.author " $Msauthor
-        Write-Host "Value for ms.reviewer " $Msreviewer
-        Write-Host "Write Mode " $Write
+        Write-Host "###########################" -ForegroundColor Blue
+        Write-Host "Check-DocsMetadata.ps1 Version 0.1" -ForegroundColor White
+        Write-Host "Runtime values set by user:" -ForegroundColor White
+        Write-Host "###########################" -ForegroundColor Blue
+        Write-Host "Value for path " $Path -ForegroundColor Blue
+        Write-Host "Value for author " $Author -ForegroundColor Blue
+        Write-Host "Value for ms.author " $Msauthor -ForegroundColor Blue
+        Write-Host "Value for ms.reviewer " $Msreviewer -ForegroundColor Blue
+        Write-Host "Write Mode " $Write -ForegroundColor Blue
         
 
 
@@ -57,26 +57,38 @@
         else {
             if($Author.Length -gt 1)
             {
-                Write-Host "author value provided will not be used because Write mode equals false"
+                Write-Host "author value provided will not be used because Write mode equals false" -BackgroundColor DarkRed
 
             }
             if($Msauthor.Length -gt 1)
             {
-                Write-Host "ms.author value provided will not be used because Write mode equals false"
+                Write-Host "ms.author value provided will not be used because Write mode equals false" -BackgroundColor DarkRed
 
             }
         }
 
         $files=get-ChildItem $Path  -filter "*.md"
+        if($null -eq $files)
+        {
+            throw "Did not find any Markdown files in the supplied Path"
+        }
+        #let's ask if we are ok to continue
+        $confirmation = Read-Host "Are you Sure You Want To Proceed [y/n]"
+        if ($confirmation -ne 'y') {
+        # exit
+            throw "Operation was cancelled"
+        }
         Write-Host "##############################"
         Write-Host "Begin processing..."
+        
+        #Initialize some variables
         $matchedFiles = @();
         $stringAuthorLabel = "author"
         $stringMsAuthorLabel = "ms.author"
         $stringMsreviewerLabel = "ms.reviewer"
         $stringSchema = "schema: 2.0.0"
         foreach ($file in $files){
-            #$file.FullName
+            
             $getTxtLines = Get-Content $file.FullName
 
 
@@ -89,12 +101,14 @@
 
         }            
         if($matchedFiles.Length -gt 0){
-            Write-Host "Missing either author or ms.author:"
+            Write-Host $files.Length "Files missing either author or ms.author:" -ForegroundColor Green
             foreach($pathToFile in $matchedFiles){
                 $pathToFile
             }
         }
         if($Write -eq $true){
+            Write-Host "##############################"
+            Write-Host "Adding Metadata..." -BackgroundColor Green
             foreach($pathToFile in $matchedFiles){
                 $pathToFile
 
@@ -105,7 +119,7 @@
         
                 $stringAuthor=$stringAuthorLabel+": "+$Author
                 $stringMSAuthor=$stringMsauthorLabel+": "+$Msauthor
-        
+                $stringMSReviewer=$stringMsreviewerLabel+": "+$Msreviewer
         
                 #PHASE 1.1: IDENTIFY POSITION TO ADD
                 #
@@ -186,7 +200,7 @@
                 #################################
                 $getTxtLines = Get-Content $pathToFile
                 #$stringMatch = $stringMSAuthor
-                $stringMSReviewer="ms.reviewer:"
+                
             
                 #PHASE 3.1: IDENTIFY POSITION TO ADD MS.reviewer
                 #
@@ -223,3 +237,4 @@
 
             }
         }
+        
