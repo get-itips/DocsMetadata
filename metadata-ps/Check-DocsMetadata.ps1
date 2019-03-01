@@ -33,6 +33,12 @@
 
 
         #Initial checks
+        #Are we running in PS Core?
+        if(!$PSVersionTable.PSEdition.Equals("Core"))
+        {
+            throw "You need to run this Script in PowerShell Core edition"
+        }
+
         #Are we running with write mode on or off?
         #Are all variable values being provided?
         if($write){
