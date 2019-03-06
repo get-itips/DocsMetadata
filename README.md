@@ -1,6 +1,6 @@
 # DocsMetadata
 
-This private repo holds a PowerShell Core Script to check or update Metadata in MicrosoftDocs-style repos.
+This repo holds a PowerShell Core Script to check or update Metadata in MicrosoftDocs-style repos.
 
 ## Requirements
 This needs to be run on **PowerShell Core 6.1.0 or higher**
