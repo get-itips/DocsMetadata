@@ -2,6 +2,8 @@
 #Todo: Add control if the md file lacks schema string
 #Author: Andres Gorzelany
 #GitHub Handle: get-itips
+#Contains portions of http://quickbytesstuff.blogspot.com PowerShell Script
+
 
         param(
             [Parameter(Mandatory=$true,ValueFromPipelineByPropertyName=$true)]

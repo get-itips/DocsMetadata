@@ -1,5 +1,5 @@
-$initialPath = "D:\Prof\dev\docs\office-docs-powershell\sharepoint\sharepoint-ps\sharepoint-pnp"
-$files=get-ChildItem $initialPath -filter "n*.md"
+$initialPath = "D:\Prof\dev\docs\office-docs-powershell\sharepoint\sharepoint-ps\sharepoint-server"
+$files=get-ChildItem $initialPath -filter "e*.md"
 foreach ($file in $files){
     
     $file.FullName
@@ -45,8 +45,8 @@ foreach ($file in $files){
         #Line after the match string, insert the new string
 
 
-        $stringAuthor="author: vesajuvonen"
-        $stringMSAuthor="ms.author: vesaj"
+        $stringAuthor="author: techwriter40"
+        $stringMSAuthor="ms.author: kirks"
 
 
         #PHASE 1.1: IDENTIFY POSITION TO ADD
