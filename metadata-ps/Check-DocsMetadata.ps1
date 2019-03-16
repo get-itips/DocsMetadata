@@ -10,6 +10,9 @@
             [string]$Path="",
 
             [Parameter(Mandatory=$false,ValueFromPipelineByPropertyName=$true)]
+            [string]$FileFilter="",
+
+            [Parameter(Mandatory=$false,ValueFromPipelineByPropertyName=$true)]
             [string]$Author="",
     
             [Parameter(Mandatory=$false,ValueFromPipelineByPropertyName=$true)]
@@ -23,10 +26,11 @@
         )
 
         Write-Host "###########################" -ForegroundColor Blue
-        Write-Host "Check-DocsMetadata.ps1 Version 0.2" -ForegroundColor White
+        Write-Host "Check-DocsMetadata.ps1 Version 0.3" -ForegroundColor White
         Write-Host "Runtime values set by user:" -ForegroundColor White
         Write-Host "###########################" -ForegroundColor Blue
         Write-Host "Value for path " $Path -ForegroundColor Blue
+        Write-Host "Value for FileFilter " $FileFilter -ForegroundColor Blue
         Write-Host "Value for author " $Author -ForegroundColor Blue
         Write-Host "Value for ms.author " $Msauthor -ForegroundColor Blue
         Write-Host "Value for ms.reviewer " $Msreviewer -ForegroundColor Blue
@@ -68,8 +72,8 @@
 
             }
         }
-
-        $files=get-ChildItem $Path  -filter "*.md"
+        
+        $files=get-ChildItem $Path  -filter "$fileFilter*.md"
         if($null -eq $files)
         {
             throw "Did not find any Markdown files in the supplied Path"
