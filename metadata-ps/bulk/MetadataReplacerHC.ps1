@@ -87,6 +87,7 @@ foreach($letter in $lettersArray)
 }
 
 $message = "folders starting with "+ $lettersArray[0]+ " " + $lettersArray[1]+ " "+$lettersArray[2]
+$debug
 $message
 read-host "Press enter to commit"
 git commit -a -m "Changed coreyp to kenwith as author" -m $message
