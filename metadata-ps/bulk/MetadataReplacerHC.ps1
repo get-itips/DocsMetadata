@@ -1,15 +1,16 @@
 
-$initialPath = "E:\Prof\dev\docs\windows-powershell-docs\docset\windows\"
+$initialPath = "E:\Prof\dev\docs\windows-powershell-docs\docset\winserver2012r2-ps\"
 
-$lettersArray = @("d","e","f")
-git status
+$lettersArray = @("a")
+
 
 foreach($letter in $lettersArray)
 {
 
     $batchPath = Get-ChildItem $initialPath  -filter "$letter*"
-    Write-Host $batchPath.FullName -ForegroundColor Red
+    
     foreach($path in $batchPath){
+        Write-Host $path.FullName -ForegroundColor Red
 
         $files=get-ChildItem $path  -filter "*.md"
 
@@ -21,7 +22,9 @@ foreach($letter in $lettersArray)
         (Get-Content $pathToFile -Encoding UTF8).replace('author: coreyp-at-msft', 'author: kenwith') | Set-Content $pathToFile  -Encoding utf8
         
         $getTxtLines = Get-Content $pathToFile
-        $stringMatch = "title:"
+        $stringMatch = ""
+        $stringTitle = "title:"
+        $stringSchema = "schema:"
         $stringMSReviewer="ms.reviewer:"
         $run=$true
         if($getTxtLines -cmatch $stringMSReviewer)
@@ -33,13 +36,26 @@ foreach($letter in $lettersArray)
         }
         
         
-        $ble = $getTxtLines -match $stringMatch
-        if($ble.Count -eq 0)
+        $ble = $getTxtLines -match $stringTitle
+        if($ble.Count -eq 0) #title not found
         {
 
-            Write-Host "Doesn't have title string: "$pathToFile"" -ForegroundColor Green
+           
+            $ble2 = $getTxtLines -match $stringSchema
+            if($ble2.Count -eq 0) #neither found
+            {
+                Write-Host "Doesn't have title or schema string: "$pathToFile"" -ForegroundColor Green
+                $run=$false
+            }
+            else { #we found Schema String
+                $stringMatch=$stringSchema
+            }
+           
+        }
+        else { #we found title string
+            $stringMatch=$stringTitle
 
-            $run=$false
+
         }
         
         
@@ -85,10 +101,15 @@ foreach($letter in $lettersArray)
     }
 
 }
+$message = "folders starting with "
+foreach($letter in $lettersArray)
+{
+    $message=$message + $letter
+    $message=$message + " "
+}
 
-$message = "folders starting with "+ $lettersArray[0]+ " " + $lettersArray[1]+ " "+$lettersArray[2]
-$debug
-$message
-read-host "Press enter to commit"
-git commit -a -m "Changed coreyp to kenwith as author" -m $message
+
+#$message
+#Start-Sleep -s 15
+#git -C "E:\Prof\dev\docs\windows-powershell-docs\" commit -a -m "Changed coreyp to kenwith as author" -m $message
 
