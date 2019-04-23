@@ -25,8 +25,8 @@ Write-Host "Runtime values set by user:" -ForegroundColor White
 Write-Host "###########################" -ForegroundColor Blue
 Write-Host "Value for path " $Path -ForegroundColor Blue
 Write-Host "Value for FileFilter " $FileFilter -ForegroundColor Blue
-Write-Host "Value for author " $UrlToBeReplaced -ForegroundColor Blue
-Write-Host "Value for ms.author " $NewUrl -ForegroundColor Blue
+Write-Host "Value for UrlToBeReplaced " $UrlToBeReplaced -ForegroundColor Blue
+Write-Host "Value for NewUrl " $NewUrl -ForegroundColor Blue
 
 $files=get-ChildItem $Path  -filter "$fileFilter*.md" -Recurse
 if($null -eq $files)
