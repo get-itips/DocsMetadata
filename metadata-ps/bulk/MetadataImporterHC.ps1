@@ -1,12 +1,12 @@
-$initialPath = "E:\Prof\Dev\docs\windows-powershell-docs\docset\winserver2012-ps\"
+$initialPath = "D:\Prof\dev\docs\OfficeDocs-SkypeForBusiness\Teams"
 
-#$lettersArray =[char[]]([char]'A'..[char]'Z') -join ''
+$lettersArray =[char[]]([char]'A'..[char]'Z') -join ''
 
-$lettersArray = @("f")
+#$lettersArray = @("f")
 $stringMaster="ms.assetid:"
 #foreach($letter in $lettersArray)
 $stringMSReviewer="ms.reviewer:"
-foreach($letter in $lettersArray)
+foreach($letter in $lettersArray.ToCharArray())
 {
 
     $batchPath = Get-ChildItem $initialPath  -filter "$letter*"

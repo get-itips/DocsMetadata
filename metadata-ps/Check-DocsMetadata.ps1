@@ -26,7 +26,7 @@
         )
 
         Write-Host "###########################" -ForegroundColor Blue
-        Write-Host "Check-DocsMetadata.ps1 Version 0.3" -ForegroundColor White
+        Write-Host "Check-DocsMetadata.ps1 Version 0.4" -ForegroundColor White
         Write-Host "Runtime values set by user:" -ForegroundColor White
         Write-Host "###########################" -ForegroundColor Blue
         Write-Host "Value for path " $Path -ForegroundColor Blue
@@ -73,7 +73,7 @@
             }
         }
         
-        $files=get-ChildItem $Path  -filter "$fileFilter*.md"
+        $files=get-ChildItem $Path  -filter "$fileFilter*.md" -Recurse
         if($null -eq $files)
         {
             throw "Did not find any Markdown files in the supplied Path"
@@ -92,155 +92,215 @@
         $stringAuthorLabel = "author"
         $stringMsAuthorLabel = "ms.author"
         $stringMsreviewerLabel = "ms.reviewer"
-        $stringSchema = "schema: 2.0.0"
-        foreach ($file in $files){
+        #$stringMaster = "^ms:assetid"
+        $stringMaster = "^title:"
+        #Deprecated
+        # foreach ($file in $files){
             
-            $getTxtLines = Get-Content $file.FullName
-
+        #     $getTxtLines = Get-Content $file.FullName
+        #     #$file.FullName
 
             
-            if(!($getTxtLines -cmatch $stringMsAuthorLabel -or $getTxtLines -cmatch $stringAuthorLabel -or $getTxtLines -cmatch $stringMsreviewerLabel))
-            {
-                $matchedFiles+=$file.FullName
-                
-            }
+        #     if(!($getTxtLines -cmatch $stringMsAuthorLabel -or $getTxtLines -cmatch $stringAuthorLabel -or $getTxtLines -cmatch $stringMsreviewerLabel))
+        #     {
+        #         $matchedFiles+=$file.FullName
+        #         #$file.FullName
+        #     }
 
-        }            
-        if($matchedFiles.Length -gt 0){
-            Write-Host $files.Length "Files missing either author or ms.author:" -ForegroundColor Green
-            foreach($pathToFile in $matchedFiles){
-                $pathToFile
-            }
-        }
+        # }
+        # $matchedFiles           
+        # if($matchedFiles.Length -gt 0){
+        #     Write-Host $files.Length "Files missing either author or ms.author:" -ForegroundColor Green
+        #     foreach($pathToFile in $matchedFiles){
+        #         $pathToFile
+        #     }
+        # }
         if($Write -eq $true){
             Write-Host "##############################"
-            Write-Host "Adding Metadata..." -BackgroundColor Green
-            foreach($pathToFile in $matchedFiles){
-                $pathToFile
+            Write-Host "Processing..." -BackgroundColor Green
+            $modifiedFiles=0
+            foreach($file in $files){
+                $pathToFile=$file.FullName
 
-                $getTxtLines = Get-Content $pathToFile
+                $getTxtLines = Get-Content $pathToFile -Encoding UTF8
                 #Find the string to match
                 #Line after the match string, insert the new string
         
-        
-                $stringAuthor=$stringAuthorLabel+": "+$Author
-                $stringMSAuthor=$stringMsauthorLabel+": "+$Msauthor
-                $stringMSReviewer=$stringMsreviewerLabel+": "+$Msreviewer
-        
-                #PHASE 1.1: IDENTIFY POSITION TO ADD
-                #
+                $runAuthor=$true
+                $runMsAuthor=$true
+                $runMsReviewer=$true
+                $run=$true
                 #will contain the matched line number
-                $getStringposNumber = [array]::indexof($getTxtLines, $getTxtLines -match $stringSchema)
-        
-                #Add 1 to the matched line number
-                #Add 1 so the new line to be inserted is below the matched string
-                $xpos = $getStringposNumber+1
-        
-                #save the match string to a variable
-                $xsave = $getTxtLines[$getStringposNumber]
-        
-                #Insert new lines
-                $getTxtLines[$getStringposNumber]="`n`r"
-                $getTxtLines[$getStringposNumber]=[Environment]::NewLine
-        
-                #save the text files with the new lines
-                $getTxtLines | Out-File -FilePath $pathToFile -Encoding utf8
-        
-                #PHASE 1.2 - Adding AUTHOR
-                #
-                #Open again the text file with the new index array numbers
-                $getTxtLines = Get-Content $pathToFile
-                $getStringposNumber = [array]::indexof($getTxtLines, $getTxtLines -match $stringSchema)
-        
-                #put back the save data
-                $getTxtLines[$getStringposNumber]="$xsave"
-        
-                #insert the new string to the newly added line
-                $getTxtLines[$xpos]=$stringAuthor
-                #finally save the file again (the final output)
-                $getTxtLines | Out-File -FilePath $pathToFile -Encoding utf8
-        
-                #PHASE 2 - Adding MS.AUTHOR
-                #################################
-                #################################
-                $getTxtLines = Get-Content $pathToFile
-                #$stringMatch = $stringAuthor
-        
-            
-                #PHASE 2.1: IDENTIFY POSITION TO ADD MS.AUTHOR
-                #
-                #will contain the matched line number
-                $getStringposNumber = [array]::indexof($getTxtLines, $getTxtLines -match $stringAuthor)
-        
-                #Add 1 to the matched line number
-                #Add 1 so the new line to be inserted is below the matched string
-                $xpos = $getStringposNumber+1
-        
-                #save the match string to a variable
-                $xsave = $getTxtLines[$getStringposNumber]
-        
-                #Insert new lines
-                $getTxtLines[$getStringposNumber]="`n`r"
-                $getTxtLines[$getStringposNumber]=[Environment]::NewLine
-        
-                #save the text files with the new lines
-                $getTxtLines | Out-File -FilePath $pathToFile -Encoding utf8
-        
-                #PHASE 2.2 - Adding ms.AUTHOR
-                #
-                #Open again the text file with the new index array numbers
-                $getTxtLines = Get-Content $pathToFile
-                $getStringposNumber = [array]::indexof($getTxtLines, $getTxtLines -match $stringAuthor)
-        
-                #put back the save data
-                $getTxtLines[$getStringposNumber]="$xsave"
-        
-                #insert the new string to the newly added line
-                $getTxtLines[$xpos]=$stringMSAuthor
-                #finally save the file again (the final output)
-                $getTxtLines | Out-File -FilePath $pathToFile -Encoding utf8
-        
-        
-                #PHASE 3 - Adding ms.reviewer:
-                #################################
-                #################################
-                $getTxtLines = Get-Content $pathToFile
-                #$stringMatch = $stringMSAuthor
+    
+                if($getTxtLines -cmatch "^ms.author")
+                {
+                    #Write-Host "##############################"
+                    Write-Host "Already has ms.author: $pathToFile" -ForegroundColor Cyan
+                    #Write-Host ""
+                    $runMsAuthor=$false
+                }
+                if($getTxtLines -cmatch "^author")
+                {
+                    #Write-Host "##############################"
+                    Write-Host "Already has author: $pathToFile" -ForegroundColor Blue
+                    #Write-Host ""
+                    $runAuthor=$false
+                }
                 
-            
-                #PHASE 3.1: IDENTIFY POSITION TO ADD MS.reviewer
-                #
-                #will contain the matched line number
-                $getStringposNumber = [array]::indexof($getTxtLines, $getTxtLines -match $stringMSAuthor)
-        
-                #Add 1 to the matched line number
-                #Add 1 so the new line to be inserted is below the matched string
-                $xpos = $getStringposNumber+1
-        
-                #save the match string to a variable
-                $xsave = $getTxtLines[$getStringposNumber]
-        
-                #Insert new lines
-                $getTxtLines[$getStringposNumber]="`n`r"
-                $getTxtLines[$getStringposNumber]=[Environment]::NewLine
-        
-                #save the text files with the new lines
-                $getTxtLines | Out-File -FilePath $pathToFile -Encoding utf8
-        
-                #PHASE 3.2 - Adding ms.AUTHOR
-                #
-                #Open again the text file with the new index array numbers
-                $getTxtLines = Get-Content $pathToFile
-                $getStringposNumber = [array]::indexof($getTxtLines, $getTxtLines -match $stringMSAuthor)
-        
-                #put back the save data
-                $getTxtLines[$getStringposNumber]="$xsave"
-        
-                #insert the new string to the newly added line
-                $getTxtLines[$xpos]=$stringMSReviewer
-                #finally save the file again (the final output)
-                $getTxtLines | Out-File -FilePath $pathToFile -Encoding utf8
+                if($getTxtLines -cmatch "^ms.reviewer")
+                {
+                    #Write-Host "##############################"
+                    Write-Host "Already has ms.reviewer: "$pathToFile"" -ForegroundColor Green
+    
+                    $runMsReviewer=$false
+                }
 
+                $stringMatch = $stringMaster
+                $ble = $getTxtLines -match $stringMatch
+    
+    
+    
+                if($ble.Count -eq 0)
+                {
+                    Write-Host "Doesn't have assetid string: "$pathToFile"" -ForegroundColor Red
+    
+                    $run=$false
+                }
+
+                if($run)
+                {
+                    $stringAuthor=$stringAuthorLabel+": "+$Author
+                    $stringMSAuthor=$stringMsauthorLabel+": "+$Msauthor
+                    $stringMSReviewer=$stringMsreviewerLabel+": "+$Msreviewer
+                    
+                    if($runAuthor){
+                        $modifiedFiles=$modifiedFiles+1
+                        $pathToFile
+                        #PHASE 1.1: IDENTIFY POSITION TO ADD
+                        #
+                        #will contain the matched line number
+                        $getStringposNumber = [array]::indexof($getTxtLines, $getTxtLines -match $stringMaster)
+                
+                        #Add 1 to the matched line number
+                        #Add 1 so the new line to be inserted is below the matched string
+                        $xpos = $getStringposNumber+1
+                
+                        #save the match string to a variable
+                        $xsave = $getTxtLines[$getStringposNumber]
+                
+                        #Insert new lines
+                        $getTxtLines[$getStringposNumber]="`n`r"
+                        $getTxtLines[$getStringposNumber]=[Environment]::NewLine
+                
+                        #save the text files with the new lines
+                        $getTxtLines | Out-File -FilePath $pathToFile -Encoding utf8
+                
+                        #PHASE 1.2 - Adding AUTHOR
+                        #
+                        #Open again the text file with the new index array numbers
+                        $getTxtLines = Get-Content $pathToFile -Encoding UTF8
+                        $getStringposNumber = [array]::indexof($getTxtLines, $getTxtLines -match $stringMaster)
+                
+                        #put back the save data
+                        $getTxtLines[$getStringposNumber]="$xsave"
+                
+                        #insert the new string to the newly added line
+                        $getTxtLines[$xpos]=$stringAuthor
+                        #finally save the file again (the final output)
+                        $getTxtLines | Out-File -FilePath $pathToFile -Encoding utf8
+                    }
+
+                    if($runMsAuthor -and $runAuthor){
+                        $modifiedFiles=$modifiedFiles+1
+                        $pathToFile
+                        #PHASE 2 - Adding MS.AUTHOR
+                        #################################
+                        #################################
+                        $getTxtLines = Get-Content $pathToFile -Encoding UTF8
+                        #$stringMatch = $stringAuthor
+                
+                    
+                        #PHASE 2.1: IDENTIFY POSITION TO ADD MS.AUTHOR
+                        #
+                        #will contain the matched line number
+                        $getStringposNumber = [array]::indexof($getTxtLines, $getTxtLines -match $stringMaster)
+                
+                        #Add 1 to the matched line number
+                        #Add 1 so the new line to be inserted is below the matched string
+                        $xpos = $getStringposNumber+1
+                
+                        #save the match string to a variable
+                        $xsave = $getTxtLines[$getStringposNumber]
+                
+                        #Insert new lines
+                        $getTxtLines[$getStringposNumber]="`n`r"
+                        $getTxtLines[$getStringposNumber]=[Environment]::NewLine
+                
+                        #save the text files with the new lines
+                        $getTxtLines | Out-File -FilePath $pathToFile -Encoding utf8
+                
+                        #PHASE 2.2 - Adding ms.AUTHOR
+                        #
+                        #Open again the text file with the new index array numbers
+                        $getTxtLines = Get-Content $pathToFile -Encoding UTF8
+                        $getStringposNumber = [array]::indexof($getTxtLines, $getTxtLines -match $stringMaster)
+                
+                        #put back the save data
+                        $getTxtLines[$getStringposNumber]="$xsave"
+                
+                        #insert the new string to the newly added line
+                        $getTxtLines[$xpos]=$stringMSAuthor
+                        #finally save the file again (the final output)
+                        $getTxtLines | Out-File -FilePath $pathToFile -Encoding utf8
+                    }
+                    
+                    if($runMsReviewer)
+                    {
+                        $modifiedFiles=$modifiedFiles+1
+                        $pathToFile
+                        #PHASE 3 - Adding ms.reviewer:
+                        #################################
+                        #################################
+                        $getTxtLines = Get-Content $pathToFile -Encoding UTF8
+                        #$stringMatch = $stringMSAuthor
+                        
+                    
+                        #PHASE 3.1: IDENTIFY POSITION TO ADD MS.reviewer
+                        #
+                        #will contain the matched line number
+                        $getStringposNumber = [array]::indexof($getTxtLines, $getTxtLines -match $stringMaster)
+                
+                        #Add 1 to the matched line number
+                        #Add 1 so the new line to be inserted is below the matched string
+                        $xpos = $getStringposNumber+1
+                
+                        #save the match string to a variable
+                        $xsave = $getTxtLines[$getStringposNumber]
+                
+                        #Insert new lines
+                        $getTxtLines[$getStringposNumber]="`n`r"
+                        $getTxtLines[$getStringposNumber]=[Environment]::NewLine
+                
+                        #save the text files with the new lines
+                        $getTxtLines | Out-File -FilePath $pathToFile -Encoding utf8
+                
+                        #PHASE 3.2 - Adding ms.AUTHOR
+                        #
+                        #Open again the text file with the new index array numbers
+                        $getTxtLines = Get-Content $pathToFile -Encoding UTF8
+                        $getStringposNumber = [array]::indexof($getTxtLines, $getTxtLines -match $stringMaster)
+                
+                        #put back the save data
+                        $getTxtLines[$getStringposNumber]="$xsave"
+                
+                        #insert the new string to the newly added line
+                        $getTxtLines[$xpos]=$stringMSReviewer
+                        #finally save the file again (the final output)
+                        $getTxtLines | Out-File -FilePath $pathToFile -Encoding utf8
+                    }
+                }
+                
             }
+            write-host $modifiedFiles " modifications"
         }
         
